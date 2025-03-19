@@ -56,18 +56,17 @@ module.exports = {
         } else if (interaction.options.getSubcommand() === 'chaotic') {
             url = `https://materiaraiding.com/chaotic/${string}`;
         }
-        console.log(url);
 
         try {
             const response = await fetch(url);
             if (response.status === 200) {
                 await interaction.reply(url);
             } else {
-                await interaction.reply(`The guide for ${string.toUpperCase()} is not available.`);
+                await interaction.reply(`Sorry, there currently is no guide for ${string.toUpperCase()} available.`);
             }
         } catch (error) {
             console.error(error);
-            await interaction.reply(`There was an error fetching the guide for ${string.toUpperCase()}.`);
+            await interaction.reply(`There was an error fetching the guide for ${string.toUpperCase()}. Tell a mod!`);
         }
     },
 };

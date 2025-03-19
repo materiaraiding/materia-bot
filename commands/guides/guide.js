@@ -46,17 +46,28 @@ module.exports = {
             await interaction.reply(`Please enter a valid 3-letter name!`);
             return;
         }
+        let url;
         if (interaction.options.getSubcommand() === 'savage') {
-            await interaction.reply(`https://materiaraiding.com/savage/${string}`);
-
+            url = `https://materiaraiding.com/savage/${string}`;
         } else if (interaction.options.getSubcommand() === 'extreme') {
-            await interaction.reply(`https://materiaraiding.com/extreme/${string}`);
-
+            url = `https://materiaraiding.com/extreme/${string}`;
         } else if (interaction.options.getSubcommand() === 'criterion') {
-            await interaction.reply(`https://materiaraiding.com/criterion/${string}`);
-
+            url = `https://materiaraiding.com/criterion/${string}`;
         } else if (interaction.options.getSubcommand() === 'chaotic') {
-            await interaction.reply(`https://materiaraiding.com/chaotic/${string}`);
+            url = `https://materiaraiding.com/chaotic/${string}`;
+        }
+        console.log(url);
+
+        try {
+            const response = await fetch(url);
+            if (response.status === 200) {
+                await interaction.reply(url);
+            } else {
+                await interaction.reply(`The guide for ${string.toUpperCase()} is not available.`);
+            }
+        } catch (error) {
+            console.error(error);
+            await interaction.reply(`There was an error fetching the guide for ${string.toUpperCase()}.`);
         }
     },
 };

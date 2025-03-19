@@ -15,6 +15,15 @@ module.exports = {
                 ))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('ultimate')
+                .setDescription('Ultimate Raid Guides')
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Enter the 3-letter abbreviated name, eg: FRU')
+                        .setRequired(true)
+                ))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('extreme')
                 .setDescription('Extreme Trial Guides')
                 .addStringOption(option =>
@@ -55,6 +64,8 @@ module.exports = {
             url = `https://materiaraiding.com/criterion/${string}`;
         } else if (interaction.options.getSubcommand() === 'chaotic') {
             url = `https://materiaraiding.com/chaotic/${string}`;
+        } else if (interaction.options.getSubcommand() === 'ultimate') {
+            url = `https://materiaraiding.com/ultimate/${string}`;
         }
 
         try {

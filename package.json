@@ -5,6 +5,7 @@
     "node-fetch": "^3.3.2"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "register": "node deploy-commands.js"
   }
 }

@@ -10,7 +10,7 @@ module.exports = {
                 .setDescription('Savage Raid Guides')
                 .addStringOption(option =>
                     option.setName('name')
-                        .setDescription('Enter the 3-letter abbreviated name, eg: M4S')
+                        .setDescription('Enter the abbreviated name, eg: M4S')
                         .setRequired(true)
                 ))
         .addSubcommand(subcommand =>
@@ -19,7 +19,7 @@ module.exports = {
                 .setDescription('Ultimate Raid Guides')
                 .addStringOption(option =>
                     option.setName('name')
-                        .setDescription('Enter the 3-letter abbreviated name, eg: FRU')
+                        .setDescription('Enter the abbreviated name, eg: FRU')
                         .setRequired(true)
                 ))
         .addSubcommand(subcommand =>
@@ -28,7 +28,7 @@ module.exports = {
                 .setDescription('Extreme Trial Guides')
                 .addStringOption(option =>
                     option.setName('name')
-                        .setDescription('Enter the 3-letter abbreviated name, eg: EX1')
+                        .setDescription('Enter the abbreviated name, eg: EX1')
                         .setRequired(true)
                 ))
         .addSubcommand(subcommand =>
@@ -37,7 +37,7 @@ module.exports = {
                 .setDescription('Criterion Guides')
                 .addStringOption(option =>
                     option.setName('name')
-                        .setDescription('Enter the 3-letter abbreviated name, eg: AAI')
+                        .setDescription('Enter the abbreviated name, eg: AAI')
                         .setRequired(true)
                         ))
         .addSubcommand(subcommand =>
@@ -46,13 +46,13 @@ module.exports = {
                 .setDescription('Chaotic Alliance Raid Guides')
                 .addStringOption(option =>
                     option.setName('name')
-                        .setDescription('Enter the 3-letter abbreviated name, eg: COD')
+                        .setDescription('Enter the abbreviated name, eg: COD')
                         .setRequired(true)
                         )),
     async execute(interaction) {
         let string = interaction.options.getString('name').toLowerCase();
-        if (string.length !== 3) {
-            await interaction.reply(`Please enter a valid 3-letter name!`);
+        if (string.length <= 4) {
+            await interaction.reply(`Please enter a valid fight name!`);
             return;
         }
         let url;

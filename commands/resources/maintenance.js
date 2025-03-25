@@ -8,7 +8,7 @@ module.exports = {
         .setName('maintenance')
         .setDescription('Get the most recent maintenance information from the Lodestone.'),
     async execute(interaction) {
-        const url = 'https://na.finalfantasyxiv.com/lodestone/news/news.xml';
+        const url = 'https://eu.finalfantasyxiv.com/lodestone/news/news.xml';
         
         https.get(url, (res) => {
             let data = '';

@@ -1,72 +1,138 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { fetchSitemapXML } = require('../tooling/fetchSitemap.js');
+
+// Define categories and their corresponding names
+const categories = {
+    savage: 'Savage Raid Guides',
+    ultimate: 'Ultimate Raid Guides',
+    extreme: 'Extreme Trial Guides',
+    criterion: 'Criterion Guides',
+    chaotic: 'Chaotic Alliance Raid Guides',
+    fieldops: 'Field Operations Guides'
+}
+
+// Initialize as null, will be populated when needed
+let xmlData = null;
+
+// Function to initialize the XML data if it hasn't been loaded yet
+async function ensureXmlDataLoaded() {
+    if (!xmlData) {
+        xmlData = await fetchSitemapXML();
+    }
+    return xmlData;
+}
+
+// function to fetch sitemap and split it into categories based on the URL structure: https://materiaraiding.com/<category>/
+async function fetchGuides(requestedCategory) {
+    try {
+        // Ensure the XML data is loaded
+        const data = await ensureXmlDataLoaded();
+        if (!data) {
+            return null;
+        }
+
+        // Regular expression to extract category and pagename from URLs
+        const urlPattern = /https:\/\/materiaraiding\.com\/([^\/]+)\/([^\/]+)/;
+
+        // Parse XML data
+        const urlElements = data.match(/<url>([\s\S]*?)<\/url>/g) || [];
+
+        // Array to store guides for the requested category
+        const guides = [];
+
+        urlElements.forEach(urlElement => {
+            const locMatch = urlElement.match(/<loc>(.*?)<\/loc>/);
+            if (locMatch) {
+                const url = locMatch[1];
+                const match = url.match(urlPattern);
+
+                if (match) {
+                    const category = match[1];
+                    const pagename = match[2];
+
+                    // Only process the requested category
+                    if (category === requestedCategory) {
+                        guides.push({
+                            category,
+                            pagename,
+                            url
+                        });
+                    }
+                }
+            }
+        });
+
+        return guides;
+    } catch (error) {
+        console.error('Error processing sitemap data:', error);
+        return null;
+    }
+}
+
+// Function to build choices for the select menu based on the category
+async function buildChoices(category) {
+    return await fetchGuides(category).then(guides => {
+        if (!guides || guides.length === 0) {
+            return [{ name: `No ${categories[category]} available`, value: 'none' }];
+        }
+
+        return guides.map(guide => ({
+            name: guide.pagename.toUpperCase(),
+            value: guide.pagename.toLowerCase()
+        }));
+    });
+}
+
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('guide')
-        .setDescription('Gets the link to a guide.')
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('savage')
-                .setDescription('Savage Raid Guides')
-                .addStringOption(option =>
-                    option.setName('name')
-                        .setDescription('Enter the abbreviated name, eg: M4S')
-                        .setRequired(true)
-                ))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('ultimate')
-                .setDescription('Ultimate Raid Guides')
-                .addStringOption(option =>
-                    option.setName('name')
-                        .setDescription('Enter the abbreviated name, eg: FRU')
-                        .setRequired(true)
-                ))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('extreme')
-                .setDescription('Extreme Trial Guides')
-                .addStringOption(option =>
-                    option.setName('name')
-                        .setDescription('Enter the abbreviated name, eg: EX1')
-                        .setRequired(true)
-                ))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('criterion')
-                .setDescription('Criterion Guides')
-                .addStringOption(option =>
-                    option.setName('name')
-                        .setDescription('Enter the abbreviated name, eg: AAI')
-                        .setRequired(true)
-                        ))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('chaotic')
-                .setDescription('Chaotic Alliance Raid Guides')
-                .addStringOption(option =>
-                    option.setName('name')
-                        .setDescription('Enter the abbreviated name, eg: COD')
-                        .setRequired(true)
-                        )),
+    data: async () => {
+        // Create a map to store choices for all categories
+        const categoryChoicesMap = new Map();
+
+        // Fetch choices for each category and store in the map
+        await Promise.all(
+            Object.keys(categories).map(async (category) => {
+                categoryChoicesMap.set(category, await buildChoices(category));
+            })
+        );
+
+        // Create the SlashCommandBuilder instance
+        const builder = new SlashCommandBuilder()
+            .setName('guide')
+            .setDescription('Gets the link to a guide.');
+
+        // Add subcommands for each category
+        for (const [category, categoryName] of Object.entries(categories)) {
+            builder.addSubcommand(subcommand =>
+                subcommand
+                    .setName(category)
+                    .setDescription(`${categoryName}`)
+                    .addStringOption(option =>
+                        option.setName('fight')
+                            .setDescription('Choose a fight from the list')
+                            .setRequired(true)
+                            .addChoices(...categoryChoicesMap.get(category))
+                    )
+            );
+        }
+        console.log(builder)
+        return builder;
+    },
     async execute(interaction) {
-        let string = interaction.options.getString('name').toLowerCase();
-        if (string.length <= 4) {
+        let subcommand = interaction.options.getSubcommand();
+        let string = interaction.options.getString('fight').toLowerCase();
+
+        if (string.length > 4 && string !== 'none') {
             await interaction.reply(`Please enter a valid fight name!`);
             return;
         }
-        let url;
-        if (interaction.options.getSubcommand() === 'savage') {
-            url = `https://materiaraiding.com/savage/${string}`;
-        } else if (interaction.options.getSubcommand() === 'extreme') {
-            url = `https://materiaraiding.com/extreme/${string}`;
-        } else if (interaction.options.getSubcommand() === 'criterion') {
-            url = `https://materiaraiding.com/criterion/${string}`;
-        } else if (interaction.options.getSubcommand() === 'chaotic') {
-            url = `https://materiaraiding.com/chaotic/${string}`;
-        } else if (interaction.options.getSubcommand() === 'ultimate') {
-            url = `https://materiaraiding.com/ultimate/${string}`;
+
+        if (string === 'none') {
+            await interaction.reply(`Sorry, there are currently no guides available for ${subcommand}.`);
+            return;
         }
+
+        let url = `https://materiaraiding.com/${subcommand}/${string}`;
 
         try {
             const response = await fetch(url);

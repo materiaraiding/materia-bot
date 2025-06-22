@@ -115,7 +115,6 @@ module.exports = {
                     )
             );
         }
-        console.log(builder)
         return builder;
     },
     async execute(interaction) {

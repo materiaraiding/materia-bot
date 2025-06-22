@@ -33,23 +33,15 @@ Materia Bot is a Discord bot designed to provide various guides for raids and tr
     if you have made changes to commands inputs they will need to be registered running the deploy-commands.js script.
 
     ```sh
-    node deploy-commands.js
+    npm run register
     ```
+   Note: This step is only necessary if you have added or modified commands. If you are running the bot for the first time, you can skip this step.
 
 4. **Run the bot:**
 
     ```sh
-    node index.js
+    npm run start
     ```
-
-## Commands
-
-The bot currently supports the following commands:
-
-- `/guide savage name:<3-letter name>` - Gets the link to a Savage Raid Guide.
-- `/guide extreme name:<3-letter name>` - Gets the link to an Extreme Trial Guide.
-- `/guide criterion name:<3-letter name>` - Gets the link to a Criterion Guide.
-- `/guide chaotic name:<3-letter name>` - Gets the link to a Chaotic Alliance Raid Guide.
 
 ## Contributing
 

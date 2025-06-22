@@ -15,7 +15,13 @@ async function fetchSitemapXML() {
         const xmlData = await response.text();
         return xmlData;
     } catch (error) {
-        console.error('Error fetching sitemap XML:', error);
+        console.error({
+            message: 'Error fetching sitemap XML',
+            error: error.message,
+            stack: error.stack,
+            url: 'https://materiaraiding.com/sitemap.xml',
+            timestamp: new Date().toISOString()
+        });
         return null;
     }
 }

@@ -17,9 +17,9 @@ const commandFolders = fs.readdirSync(foldersPath);
 (async () => {
     try {
         // Deploy slash commands first
-        console.log('Deploying commands...');
+        console.log({ message: 'Deploying commands...', timestamp: new Date().toISOString() });
         await deployCommands();
-        console.log('Command deployment complete');
+        console.log({ message: 'Command deployment complete', timestamp: new Date().toISOString() });
 
         // Then load commands for the bot to use
         for (const folder of commandFolders) {
@@ -44,17 +44,32 @@ const commandFolders = fs.readdirSync(foldersPath);
                             client.commands.set(command.data.name, command);
                         }
                     } catch (error) {
-                        console.error(`Error loading command from ${filePath}:`, error);
+                        console.error({
+                            message: `Error loading command from ${filePath}`,
+                            error: error.message,
+                            stack: error.stack,
+                            filePath,
+                            timestamp: new Date().toISOString()
+                        });
                     }
                 } else {
-                    console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+                    console.log({
+                        message: `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
+                        filePath,
+                        timestamp: new Date().toISOString()
+                    });
                 }
             }
         }
 
         // Client Login
         client.on(Events.ClientReady, readyClient => {
-            console.log(`Logged in as ${readyClient.user.tag}!`);
+            console.log({
+                message: `Logged in as ${readyClient.user.tag}!`,
+                username: readyClient.user.username,
+                id: readyClient.user.id,
+                timestamp: new Date().toISOString()
+            });
         });
 
         client.on(Events.InteractionCreate, async interaction => {
@@ -66,15 +81,35 @@ const commandFolders = fs.readdirSync(foldersPath);
                 console.error({
                     message: 'No command matching ' + interaction.commandName + ' was found.',
                     commandName: interaction.commandName,
-                    options: interaction.options.data
+                    options: interaction.options.data,
+                    guildId: interaction.guildId,
+                    userId: interaction.user.id,
+                    timestamp: new Date().toISOString()
                 });
                 return;
             }
 
             try {
                 await command.execute(interaction);
+                // Log successful command execution
+                console.log({
+                    message: 'Command executed successfully',
+                    commandName: interaction.commandName,
+                    options: interaction.options.data,
+                    guildId: interaction.guildId,
+                    userId: interaction.user.id,
+                    timestamp: new Date().toISOString()
+                });
             } catch (error) {
-                console.error(error);
+                console.error({
+                    message: 'Error executing command',
+                    commandName: interaction.commandName,
+                    error: error.message,
+                    stack: error.stack,
+                    guildId: interaction.guildId,
+                    userId: interaction.user.id,
+                    timestamp: new Date().toISOString()
+                });
                 if (interaction.replied || interaction.deferred) {
                     await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
                 } else {
@@ -86,6 +121,11 @@ const commandFolders = fs.readdirSync(foldersPath);
         // Login to Discord
         client.login(process.env.TOKEN);
     } catch (error) {
-        console.error('Failed to initialize bot:', error);
+        console.error({
+            message: 'Failed to initialize bot',
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
     }
 })();

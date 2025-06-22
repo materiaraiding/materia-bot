@@ -28,7 +28,11 @@ async function deployCommands() {
             if ('data' in command && 'execute' in command) {
                 commandModules.push(command);
             } else {
-                console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+                console.log({
+                    message: `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
+                    filePath,
+                    timestamp: new Date().toISOString()
+                });
             }
         }
     }
@@ -49,7 +53,11 @@ async function deployCommands() {
             })
         );
 
-        console.log(`Started refreshing ${commands.length} application (/) commands.`);
+        console.log({
+            message: `Started refreshing ${commands.length} application (/) commands.`,
+            commandCount: commands.length,
+            timestamp: new Date().toISOString()
+        });
 
         // The put method is used to fully refresh all commands in the guild with the current set
         const data = await rest.put(
@@ -57,11 +65,21 @@ async function deployCommands() {
             { body: commands },
         );
 
-        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+        console.log({
+            message: `Successfully reloaded ${data.length} application (/) commands.`,
+            commandCount: data.length,
+            clientId: process.env.CLIENTID,
+            timestamp: new Date().toISOString()
+        });
         return data;
     } catch (error) {
         // And of course, make sure you catch and log any errors!
-        console.error(error);
+        console.error({
+            message: 'Error deploying commands',
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
         throw error;
     }
 }
@@ -71,5 +89,12 @@ module.exports = { deployCommands };
 
 // Run the function if the file is executed directly
 if (require.main === module) {
-    deployCommands().catch(console.error);
+    deployCommands().catch(error => {
+        console.error({
+            message: 'Failed to deploy commands',
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
+    });
 }

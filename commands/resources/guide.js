@@ -64,7 +64,13 @@ async function fetchGuides(requestedCategory) {
 
         return guides;
     } catch (error) {
-        console.error('Error processing sitemap data:', error);
+        console.error({
+            message: 'Error processing sitemap data',
+            error: error.message,
+            stack: error.stack,
+            category: requestedCategory,
+            timestamp: new Date().toISOString()
+        });
         return null;
     }
 }
@@ -141,7 +147,17 @@ module.exports = {
                 await interaction.reply(`Sorry, there currently is no guide for ${string.toUpperCase()} available.`);
             }
         } catch (error) {
-            console.error(error);
+            console.error({
+                message: `Error fetching guide for ${string.toUpperCase()}`,
+                error: error.message,
+                stack: error.stack,
+                url: url,
+                category: subcommand,
+                fightName: string,
+                userId: interaction.user.id,
+                guildId: interaction.guildId,
+                timestamp: new Date().toISOString()
+            });
             await interaction.reply(`There was an error fetching the guide for ${string.toUpperCase()}. Tell a mod!`);
         }
     },

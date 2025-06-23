@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "cloudflare": "^4.4.1",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
+    "node-cron": "^4.1.1",
     "node-fetch": "^3.3.2",
     "xml2js": "^0.6.2"
   },

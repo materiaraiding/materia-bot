@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchSitemapXML } = require('../tooling/fetchSitemap.js');
+const { fetchSitemapXML } = require('../../tooling/fetchSitemap.js');
 
 // Define categories and their corresponding names
 const categories = {

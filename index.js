@@ -3,6 +3,7 @@ const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
 const dotenv = require('dotenv');
 const { deployCommands } = require('./deploy-commands.js');
+const cron = require('node-cron');
 
 dotenv.config()
 
@@ -58,6 +59,38 @@ const commandFolders = fs.readdirSync(foldersPath);
                         filePath,
                         timestamp: new Date().toISOString()
                     });
+                }
+            }
+        }
+
+        // Scheduled Tasks System
+        const scheduledPath = path.join(__dirname, 'scheduled');
+        if (fs.existsSync(scheduledPath)) {
+            const scheduledFiles = fs.readdirSync(scheduledPath).filter(file => file.endsWith('.js'));
+            for (const file of scheduledFiles) {
+                const taskModule = require(path.join(scheduledPath, file));
+                if (taskModule && taskModule.data && taskModule.data.cron && typeof taskModule.executeScheduledTask === 'function') {
+                    // Always run scheduled task once on startup
+                    (async () => {
+                        try {
+                            console.log({ message: `Running scheduled task on startup: ${taskModule.data.name}`, timestamp: new Date().toISOString() });
+                            await taskModule.executeScheduledTask(client);
+                            console.log({ message: `Scheduled task complete on startup: ${taskModule.data.name}`, timestamp: new Date().toISOString() });
+                        } catch (err) {
+                            console.error({ message: `Scheduled task error on startup: ${taskModule.data.name}`, error: err.message, stack: err.stack, timestamp: new Date().toISOString() });
+                        }
+                    })();
+                    // Schedule for cron
+                    cron.schedule(taskModule.data.cron, async () => {
+                        try {
+                            console.log({ message: `Running scheduled task: ${taskModule.data.name}`, timestamp: new Date().toISOString() });
+                            await taskModule.executeScheduledTask(client);
+                            console.log({ message: `Scheduled task complete: ${taskModule.data.name}`, timestamp: new Date().toISOString() });
+                        } catch (err) {
+                            console.error({ message: `Scheduled task error: ${taskModule.data.name}`, error: err.message, stack: err.stack, timestamp: new Date().toISOString() });
+                        }
+                    });
+                    console.log({ message: `Scheduled task loaded: ${taskModule.data.name} (${taskModule.data.cron})`, timestamp: new Date().toISOString() });
                 }
             }
         }

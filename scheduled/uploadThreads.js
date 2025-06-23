@@ -141,7 +141,6 @@ module.exports = {
             const uniqueParentIds = new Set();
             if (activeThreads.threads && activeThreads.threads.length > 0) {
                 for (const thread of activeThreads.threads) {
-                    console.log({ message: 'Processing thread', threadId: thread.id, threadName: thread.name });
                     // Insert thread
                     const { id, name, topic, owner_id, parent_id, member_count, message_count, available_tags, applied_tags, thread_metadata } = thread;
                     let owner_nickname = owner_id && memberMap[owner_id] ? memberMap[owner_id] : null;

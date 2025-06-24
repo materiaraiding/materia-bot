@@ -65,7 +65,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
         // Scheduled Tasks System
         const scheduledPath = path.join(__dirname, 'scheduled');
-        if (fs.existsSync(scheduledPath)) {
+        if (fs.existsSync(scheduledPath) && process.env.DISABLE_SCHEDULED_TASKS !== 'true') {
             const scheduledFiles = fs.readdirSync(scheduledPath).filter(file => file.endsWith('.js'));
             for (const file of scheduledFiles) {
                 const taskModule = require(path.join(scheduledPath, file));
@@ -93,6 +93,9 @@ const commandFolders = fs.readdirSync(foldersPath);
                     console.log({ message: `Scheduled task loaded: ${taskModule.data.name} (${taskModule.data.cron})`, timestamp: new Date().toISOString() });
                 }
             }
+        }
+        if (process.env.DISABLE_SCHEDULED_TASKS === 'true') {
+            console.log({ message: 'Scheduled tasks are disabled via environment variable', timestamp: new Date().toISOString() });
         }
 
         // Client Login
